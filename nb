@@ -1,0 +1,4 @@
+-u transpile ur code to es5
+-babel is run by webpack
+password :shilekunpelu1$ , username: olayemi.odujole@mnsu.edu
+-use webpack -w to keep watch on webpack
