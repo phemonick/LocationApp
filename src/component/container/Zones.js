@@ -1,21 +1,17 @@
 import React, { Component } from 'react'
-import Zone from '../presentation/Zone'
+import {Zone, CreateZone} from '../presentation'
 //superagent for api request
-import superagent from 'superagent'
+//import superagent from 'superagent'
 //state and props both maintain data
 //props are assigned to u but u determine ur state. props are passed down , state is self assigned
-
+import {APIManager} from '../../utils/'
 class Zones extends Component{
 
 	//the html is defined here using jsx
 	constructor(){
 		super();
 		this.state={
-			myZones:{
-				name:'',
-				zipCode:'',
-				numComments:''
-			},
+			selected:0,
 			list:[
 			
 			]
@@ -24,8 +20,18 @@ class Zones extends Component{
 	//get called when component shows up
 	componentDidMount(){
 		console.log("did mount")
+		APIManager.get('/api/zone',null,(err,res)=>{
+			
+			if (err){
+				alert('error '+err.message)
+				return
+			}
+			this.setState({
+				list:res.results
+			})
+		})
 
-		superagent
+		/*superagent
 		.get('/api/zone')
 		.query(null)
 		.set('Accept','application/json')
@@ -41,25 +47,43 @@ class Zones extends Component{
 			this.setState({
 				list:data
 			})
-		})
+		})*/
 
 	}
-	createZone(){
-		//console.log('created'+JSON.stringify(this.state.myZones))
-		let update=Object.assign([],this.state.list);
-		update.push(this.state.myZones);
-		this.setState({
-			list: update
+	createZone(zone){
+		console.log('created'+JSON.stringify(zone))
+		//let updatedZone=Object.assign({},this.state.myZones)
+		let updatedZone=Object.assign({},zone)
+		// updatedZone['zipCodes']=updatedZone.zipCode//.split(',')
+
+		APIManager.post('/api/zone',updatedZone,(err,res)=>{
+			if (err){
+				alert('error'+ err.message)
+				return
+			}
+			console.log('zone created'+JSON.stringify(res))
+			let updatedList= Object.assign([],this.state.list)
+			updatedList.push(res.result);
+			this.setState({
+				list:updatedList
+			})
 		})
+
+
+		// let update=Object.assign([],this.state.list);
+		// update.push(this.state.myZones);
+		// this.setState({
+		// 	list: update
+		// })
 	}
-	updateZone(event){
-		//console.log('update '+event.target.value);
-		let zoneRep=Object.assign({},this.state.myZones);
-		zoneRep[event.target.id]=event.target.value;
-		this.setState({
-			myZones:zoneRep
-		})
-	}
+	// updateZone(event){
+	// 	//console.log('update '+event.target.value);
+	// 	let zoneRep=Object.assign({},this.state.myZones);
+	// 	zoneRep[event.target.id]=event.target.value;
+	// 	this.setState({
+	// 		myZones:zoneRep
+	// 	})
+	// }
 	/*updateCode(event){
 		//console.log('update '+event.target.value);
 		let codeRep=Object.assign({},this.state.myZones);
@@ -68,20 +92,29 @@ class Zones extends Component{
 			myZones:codeRep
 		})
 	}*/
-	updateComent(event){
-		// console.log('update '+event.target.value);
-		let comRep=Object.assign({},this.state.myZones);
-		comRep['numComments']=event.target.value;
+	// updateComent(event){
+	// 	// console.log('update '+event.target.value);
+	// 	let comRep=Object.assign({},this.state.myZones);
+	// 	comRep['numComments']=event.target.value;
+	// 	this.setState({
+	// 		myZones:comRep
+	// 	})
+	// }
+	selectZone(index){
+		console.log('selected x=zone'+ index)
 		this.setState({
-			myZones:comRep
+			selected:index
 		})
 	}
 
 	render(){
 
 		const listItem=this.state.list.map((item,i)=>{
+			let selected= (i==this.state.selected)
 			return(
-			<li key={i}><Zone  currentZone={item}/></li>
+			<li key={i}>
+			<Zone index={i} select={this.selectZone.bind(this)} isSelected={selected}  currentZone={item} />
+			</li>
 			)
 		})
 //u put a variable inside {}
@@ -93,10 +126,8 @@ class Zones extends Component{
 
 
 					</ol>
-					<input id="name" onChange={this.updateZone.bind(this)} className="form-control" type="text" name="" placeholder="name" />
-					<input id="zipCode" onChange={this.updateZone.bind(this)} className="form-control" type="text" name="" placeholder="zipCode" />
-					<input onChange={this.updateComent.bind(this)} className="form-control" type="text" name="" placeholder="numComments" />
-					<button onClick={this.createZone.bind(this)} className="btn-btn-info">Create</button>
+					
+					<CreateZone onCreate={this.createZone.bind(this)} />
 			</div>
 			)
 	}

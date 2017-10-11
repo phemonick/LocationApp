@@ -15,6 +15,6 @@ class Comment extends Component{
 					<hr />
 				</div>
 		)
-	}
+	}  
 }
 export default Comment;
